@@ -13,7 +13,6 @@
       </div>
   </div>
 </template>
-
 <script>
 import Drawer from './components/Drawer.vue'
 

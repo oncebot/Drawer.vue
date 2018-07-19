@@ -1,7 +1,6 @@
 # Drawer.vue
 Simple touch enabled drawer component for vue.js.
 
-
 ### Usage
 Register the drawer component with your desired name.
 ```

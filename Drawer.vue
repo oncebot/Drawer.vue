@@ -1,5 +1,5 @@
 <template>
-	<section v-if="enabled">
+	<section v-if="enabled" ref="rootEl">
 		<aside class="sidebar" :style="style" ref="element">
 			<slot></slot>
 		</aside>
@@ -8,7 +8,7 @@
 </template>
 <script>
 	export default{
-		props:['direction','exist'],
+		props:['direction','exist','panelmode'],
 		data(){
 			return {
 				auto_speed:'0.3s',
@@ -47,7 +47,7 @@
 			document.addEventListener('touchend',(e) =>{this.handleEnd(e)});
 			document.addEventListener('touchcancel',(e) =>{this.handleEnd(e)});
 			window.addEventListener('resize', (e) =>{this.setVisibality(e)}, true);
-			this.overlay.addEventListener('transitionend',(e) =>{this.handleZindex(e)},false);			
+			this.overlay.addEventListener('transitionend',(e) =>{this.handleZindex(e)},false);
 			this.overlay.addEventListener('click',(e) =>{this.close()},false);
 			this.setVisibality();
 		},
@@ -62,7 +62,7 @@
 			handleStart(e){
 				  	this.startTime = new Date().getTime();
 				   	this.startPos = e.targetTouches[0].pageX;
-				   	this.element.style.transitionDuration = this.manual_speed;	
+				   	this.element.style.transitionDuration = this.manual_speed;
 			},
 			handleMove(e){
 					let gesture = this.gesture(e);
@@ -74,14 +74,14 @@
 								if(this.translate < 0){
 									this.element.style.transform = 'translate3d('+ this.translate +'px,0,0)';
 								}else{
-									this.open();						
+									this.open();
 								}
 						}else{
 								this.translate = -(screen.width-this.element.offsetWidth-e.touches[0].pageX);
 								if(this.translate > 0){
 									this.element.style.transform = 'translate3d('+ this.translate +'px,0,0)';
 								}else{
-									this.open();						
+									this.open();
 								}
 						}
 						this.overlayOpacity(percent/100);
@@ -91,29 +91,26 @@
 					let speed = this.speed(e);
 					let gesture = this.gesture(e);
 					let valid = this.validate(this.direction,gesture);
-
 					if(valid){
 						if(speed>0.6){
 							if(!this.active){
-								this.open();									
+								this.open();
 							}else{
-								this.close();						
+								this.close();
 							}
 						}else{
 							if(this.element.offsetWidth/2>Math.abs(this.translate)){
-								this.open();						
+								this.open();
 							}else{
-								this.close();						
-
+								this.close();
 							}
-						}			
+						}
 					}
-
 			},
 			handleZindex(){
 				let opacity = window.getComputedStyle(this.overlay).getPropertyValue('opacity');
 				if(opacity<=0){
-					this.overlay.style.zIndex = -999;			
+					this.overlay.style.zIndex = -999;
 				}
 			},
 			validate(direction,gesture){
@@ -126,7 +123,7 @@
 						return false;
 					}
 				}
-				if((document.querySelector('.sidebar.active') && !this.active) || !this.visible){
+				if((this.$refs.rootEl.querySelector('.sidebar.active') && !this.active) || !this.visible){
 					return false;
 				}
 				return true;
@@ -134,7 +131,7 @@
 			overlayOpacity(opacity){
 				this.overlay.style.opacity = opacity;
 				if(opacity > 0){
-					this.overlay.style.zIndex = 999;					
+					this.overlay.style.zIndex = 999;
 				}
 			},
 			gesture(e){
@@ -148,18 +145,20 @@
 				}else{
 					return directions[0];
 				}
-
 			},
-
 			open(){
 				this.translate = 0;
 				this.element.style.transform = 'translate3d('+this.translate+',0,0)';
 				this.element.style.transitionDuration = this.auto_speed;
-				this.overlayOpacity(1);
-	    		this.lock(document.querySelector('html'));
-	    		this.lock(document.querySelector('body'));
-				this.element.classList.add('active');	
-				this.active = true;	
+
+				if (this.panelmode === undefined) {
+					this.overlayOpacity(1);
+					this.lock(document.querySelector('html'));
+					this.lock(document.querySelector('body'));
+				}
+				this.active = true;
+
+				this.element.classList.add('active');
 			},
 			close(){
 				if(this.direction=='left'){
@@ -167,14 +166,16 @@
 				}else{
 					this.translate = this.element.offsetWidth+'px';
 				}
-				this.element.style.transform = 'translate3d('+this.translate+',0,0)';	
-				this.element.style.transitionDuration = this.auto_speed;	
-				this.overlayOpacity(0);
+				this.element.style.transform = 'translate3d('+this.translate+',0,0)';
+				this.element.style.transitionDuration = this.auto_speed;
+
+				if (this.panelmode === undefined) {
+					this.overlayOpacity(0);
 	    		this.unlock(document.querySelector('html'));
 	    		this.unlock(document.querySelector('body'));
-				this.element.classList.remove('active');	
+				}
+				this.element.classList.remove('active');
 				this.active = false;
-
 			},
 			speed(e){
 				let time = new Date().getTime() - this.startTime;
@@ -189,7 +190,7 @@
 				if(direction == 'left'){
 					test = ['swipeleft','swiperight']
 				}else{
-					test = ['swiperight','swipeleft']			
+					test = ['swiperight','swipeleft']
 				}
 				if(this.active && gesture == test[0]){
 					percentage = 100-Math.round(Math.abs(this.translate)/this.element.offsetWidth*100);
@@ -212,9 +213,9 @@
 			unlock(element){
 				element.style.removeProperty('overflow');
 				element.style.removeProperty('touch-action');
-			}			
+			}
 		}
-	}	
+	}
 </script>
 <style scoped>
 	div.overlay{
@@ -234,11 +235,12 @@
 	    will-change: transform;
 	    height: 100%;
 	    top: 0px;
-		transition:transform 0.3s ease;
+			transition:transform 0.3s ease;
 	    background:#fff;
-	    width: 300px;
-		overflow-y: auto;
-		overflow-x: hidden;
-		word-wrap: break-word;
+	    width: auto;
+			min-width: 300px;
+			overflow-y: auto;
+			overflow-x: hidden;
+			word-wrap: break-word;
 	}
 </style>

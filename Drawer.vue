@@ -46,13 +46,13 @@
 			document.addEventListener('touchmove',(e) =>{this.handleMove(e)});
 			document.addEventListener('touchend',(e) =>{this.handleEnd(e)});
 			document.addEventListener('touchcancel',(e) =>{this.handleEnd(e)});
-			window.addEventListener('resize', (e) =>{this.setVisibality(e)}, true);
+			window.addEventListener('resize', (e) =>{this.setVisibility(e)}, true);
 			this.overlay.addEventListener('transitionend',(e) =>{this.handleZindex(e)},false);			
 			this.overlay.addEventListener('click',(e) =>{this.close()},false);
-			this.setVisibality();
+			this.setVisibility();
 		},
 		methods:{
-			setVisibality(){
+			setVisibility(){
 				if(this.element.offsetWidth == 0){
 					this.visible=false;
 				}else{
